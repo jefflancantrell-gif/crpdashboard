@@ -82,6 +82,8 @@
   }
 
   if (window.__CRDASH_READONLY__) {
+    // Viewing a shared snapshot link: show the banner, keep the share button hidden
+    // (sharing a snapshot-of-a-snapshot isn't meaningful).
     banner.style.display = "block";
     banner.textContent = "🔒 Read-only shared view — loading snapshot…";
     if (window.__crdashSnapshotReady__) {
@@ -96,6 +98,7 @@
       });
     }
   } else {
+    // Normal (editable) view: show the share button.
     shareBtn.style.display = "block";
     shareBtn.addEventListener("click", async function () {
       shareBtn.disabled = true;
@@ -108,7 +111,7 @@
           await navigator.clipboard.writeText(result.url);
           copied = true;
         } catch (clipErr) {
-          copied = false; // clipboard permission blocked in this context -- fall back to the modal
+          copied = false; // clipboard permission blocked -- fall back to the modal below
         }
         const kb = Math.round(result.byteLength / 1024);
         if (copied) {
@@ -149,11 +152,7 @@
     const loading = document.getElementById("loading");
     if (loading) loading.style.display = "none";
     el.style.display = "block";
-    el.textContent = "Something failed to load:\n\n" + (e.error.stack || e.error.message) +
-      "\n\nThis usually means either (1) this computer isn't connected to the internet right now " +
-      "(the chart/spreadsheet libraries load from the web on first run), or (2) one of those " +
-      "libraries changed in a way this page doesn't expect. Check the app_transformed.jsx file " +
-      "loaded OK and that you're online, then try again.";
+    el.textContent = "Something failed to load:\n\n" + (e.error.stack || e.error.message);
   });
 </script>
 
@@ -218,9 +217,9 @@
   })
   .catch(function(err){
     showFatal("A required library failed to load:\n\n" + (err && err.message ? err.message : String(err)) +
-      "\n\nThis usually means the computer isn't connected to the internet right now, or both " +
-      "unpkg.com and cdn.jsdelivr.net are unreachable from this network (e.g. a restrictive " +
-      "firewall or proxy). Check your connection and try again.");
+      "\n\nThis usually means the site visitor isn't connected to the internet right now, or both " +
+      "unpkg.com and cdn.jsdelivr.net are unreachable (e.g. a restrictive firewall). Check your " +
+      "connection and try again.");
   });
 })();
 </script>

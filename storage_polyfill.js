@@ -3,30 +3,24 @@
 // ---------------------------------------------------------------------------
 // The dashboard was originally written for Claude.ai's artifact sandbox, which
 // provides a `window.storage` object (get/set/delete/list) as a hosted service.
-// That API doesn't exist in a plain desktop browser/WebView2 context, so this
-// polyfill reimplements the exact same signatures on top of plain browser
-// localStorage, which WebView2/Edge app-mode supports natively and which
-// persists to disk between runs of the app on this machine.
+// That API doesn't exist in a plain browser context, so this polyfill
+// reimplements the exact same signatures on top of plain browser localStorage.
 //
 // Every key is namespaced under "crdash:" so this app's data can't collide with
 // anything else that might use the same local storage origin.
 //
-// READ-ONLY SHARE LINKS: this desktop copy runs from a local file:// path, so a
-// link built from location.href would only work on a computer with this exact
-// app installed at this exact path -- useless for sending to someone remote.
-// Instead, the snapshot (everything currently in local storage, gzip-compressed
-// and encoded into a URL hash fragment -- which browsers never send to any
-// server) is attached to the SHARED_VIEWER_URL below: your already-live Netlify
-// copy of this dashboard. That site is a universal "viewer" for any snapshot,
-// regardless of which machine generated it. When that page loads with the hash
-// present, its own copy of this same polyfill decodes the snapshot and serves
-// window.storage.get/list from it instead of real localStorage, while set/delete
-// become silent no-ops -- so the exact same app code runs there, just unable to
-// persist anything.
+// READ-ONLY SHARE LINKS: this site has no backend/database, so a "send this to
+// the admin" link works by packaging every key currently in storage into a
+// JSON blob, gzip-compressing it, and encoding it into the URL's hash fragment
+// (the part after "#"). Hash fragments are never sent to any server, so this
+// needs no backend at all -- the whole snapshot travels inside the link itself.
+// When a page loads with that hash present, window.storage.get/list are backed
+// by the decoded snapshot instead of real localStorage, and set/delete become
+// silent no-ops -- so the exact same app code runs, just unable to persist
+// anything, with no changes needed to the 4,500-line dashboard itself.
 (function () {
   const NS = "crdash:";
   const HASH_PREFIX = "#share=";
-  const SHARED_VIEWER_URL = "https://vermillion-crisp-55e05b.netlify.app/";
 
   // ---- byte <-> base64url helpers (URL-safe: no +, /, or = padding) ----
   function bytesToBase64Url(bytes) {
@@ -56,9 +50,7 @@
     return new TextDecoder().decode(buf);
   }
 
-  // ---- detect a shared read-only link (only relevant if this exact file were
-  // ever opened directly with a #share= hash -- included for parity/testing,
-  // though the normal path is opening SHARED_VIEWER_URL instead) ----
+  // ---- detect a shared read-only link ----
   const isSharedLink = !!(location.hash && location.hash.indexOf(HASH_PREFIX) === 0);
   window.__CRDASH_READONLY__ = isSharedLink;
 
@@ -123,9 +115,9 @@
     },
   };
 
-  // Builds a shareable read-only link from THIS machine's local storage data,
-  // pointed at the hosted Netlify viewer rather than this file's own file://
-  // location, so the link actually works for whoever you send it to.
+  // Builds a shareable read-only link from the REAL underlying localStorage data.
+  // Only meaningful when not already viewing a shared link -- exposed for the
+  // "Share Read-Only Link" button in index.html.
   window.__crdashBuildShareLink__ = async function () {
     const data = {};
     for (let i = 0; i < localStorage.length; i++) {
@@ -135,7 +127,7 @@
     const payload = JSON.stringify({ data, __meta__: { createdAt: new Date().toISOString() } });
     const bytes = await gzipCompress(payload);
     const encoded = bytesToBase64Url(bytes);
-    const url = SHARED_VIEWER_URL + HASH_PREFIX + encoded;
+    const url = location.origin + location.pathname + HASH_PREFIX + encoded;
     return { url, byteLength: bytes.length };
   };
 })();
