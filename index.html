@@ -1699,6 +1699,13 @@ function DashboardApp(){
   const folderRef = useRef(null);
   const reportRef = useRef(null);
   const seasonReportRef = useRef(null);
+  const overviewRef = useRef(null);
+  const trendsRef = useRef(null);
+  const weatherRef = useRef(null);
+  const zipcodesRef = useRef(null);
+  const insightsRef = useRef(null);
+  const comparisonRef = useRef(null);
+  const paymentmixRef = useRef(null);
 
   useEffect(() => {
     (async () => {
@@ -2249,6 +2256,20 @@ ${content}
       setReportDownloadError(`Couldn't open the report: ${e.message}`);
     }
   }
+
+  // Lets the single "Open in New Tab (for printing)" button in the header work for whichever
+  // tab is currently active, rather than needing a separate button hand-wired into each tab.
+  const tabPrintRefs = {
+    overview: overviewRef, trends: trendsRef, weather: weatherRef, zipcodes: zipcodesRef,
+    insights: insightsRef, comparison: comparisonRef, paymentmix: paymentmixRef,
+    report: reportRef, seasonreport: seasonReportRef,
+  };
+  const tabPrintTitles = {
+    overview: "Chimney Rock Overview", trends: "Chimney Rock Trends", weather: "Chimney Rock Weather",
+    zipcodes: "Chimney Rock Zip Codes", insights: "Chimney Rock Insights",
+    comparison: "Chimney Rock vs. History", paymentmix: "Chimney Rock Stripe vs. Cash",
+    report: "Chimney Rock Ticket Plaza Report", seasonreport: "Chimney Rock Season Report",
+  };
 
   const [historicUploadProcessing, setHistoricUploadProcessing] = useState(null);
   const [historicUploadLog, setHistoricUploadLog] = useState([]);
@@ -3022,6 +3043,12 @@ ${content}
               <FileSpreadsheet size={15}/> Master Spreadsheet
             </button>
           )}
+          {hasAnyData && tabPrintRefs[tab] && (
+            <button onClick={()=>openReportInNewTab(tabPrintRefs[tab], tabPrintTitles[tab])} title="Opens just this tab in a new browser tab, ready to print or save as PDF"
+              style={{ display:"flex", alignItems:"center", gap:6, background:"white", color:C.forestDeep, border:"none", borderRadius:6, padding:"7px 12px", fontSize:12.5, fontWeight:700 }}>
+              <Printer size={15}/> Open in New Tab (for printing)
+            </button>
+          )}
           {["upload","overview","trends","weather","zipcodes","insights","comparison","paymentmix","report","seasonreport","howthis"].filter(t => !VIEW_ONLY || (t !== "upload" && t !== "howthis")).map(t => (
             <button key={t} onClick={()=>setTab(t)} style={{
               background: tab===t ? C.dusk : "transparent", color: tab===t ? "white" : "#D7E0D9",
@@ -3034,7 +3061,7 @@ ${content}
 
       {hasAnyData && (
         <div className="no-print" style={{ background:C.graniteLight, borderBottom:`1px solid ${C.line}`, padding:"6px 24px", fontSize:11.5, color:C.inkSoft, textAlign:"center" }}>
-          Printing directly from here isn't possible — this dashboard runs inside a nested browser frame, and neither the print button nor Ctrl+P can reach past that. For a printable copy, go to <b>One-Page Report</b> or <b>Season Report</b> and use "Open in New Tab."
+          Printing directly from here isn't possible — this dashboard runs inside a nested browser frame, and neither the print button nor Ctrl+P can reach past that. For a printable copy of whatever tab you're on, use the <b>"Open in New Tab (for printing)"</b> button above.
         </div>
       )}
 
@@ -3207,7 +3234,7 @@ ${content}
 
         {/* OVERVIEW TAB */}
         {tab === "overview" && (
-          <div>
+          <div ref={overviewRef}>
             {!latest ? <EmptyState/> : (
               <>
                 <div style={{ background:C.graniteLight, border:`1px solid ${C.granite}55`, borderRadius:8, padding:"10px 14px", marginBottom:14, fontSize:13.5 }}>
@@ -3385,7 +3412,7 @@ ${content}
 
         {/* TRENDS TAB */}
         {tab === "trends" && (
-          <div>
+          <div ref={trendsRef}>
             {sortedDates.length < 2 && ledgerMonths.length < 2 ? <EmptyState msg="Upload at least two days (or months, for the historical ledger) of reports to see trends."/> : (
               <>
                 {anyEstimated && (
@@ -3669,7 +3696,7 @@ ${content}
 
         {/* WEATHER TAB */}
         {tab === "weather" && (
-          <div>
+          <div ref={weatherRef}>
             <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:10 }}>
               <CloudSun size={18} color={C.sky}/>
               <div style={{ fontFamily:"Georgia, serif", fontSize:18, fontWeight:700, color:C.forestDeep }}>Weather Context</div>
@@ -3831,16 +3858,6 @@ ${content}
         {tab === "seasonreport" && (
           <div>
             <div className="no-print" style={{ marginBottom:12 }}>
-              {!VIEW_ONLY && (<>
-              <div style={{ display:"flex", justifyContent:"flex-end" }}>
-                <button onClick={()=>openReportInNewTab(seasonReportRef, "Chimney Rock Season Report")} style={{ display:"flex", alignItems:"center", gap:6, background:C.forest, color:"white", border:"none", borderRadius:6, padding:"9px 16px", fontSize:13, fontWeight:600 }}>
-                  <Printer size={15}/> Open in New Tab (for printing)
-                </button>
-              </div>
-              <p style={{ fontSize:11.5, color:C.inkSoft, textAlign:"right", marginTop:6, marginBottom:0 }}>
-                This opens a real browser tab, separate from this chat — click into <b>that new tab</b> first, then press Ctrl+P (⌘+P on Mac) from there.
-              </p>
-              </>)}
               {reportDownloadError && (
                 <div style={{ marginTop:10, fontSize:12.5, color:C.danger, background:"#FBEFE9", border:`1px solid ${C.danger}44`, borderRadius:8, padding:"8px 14px" }}>
                   ⚠️ {reportDownloadError}
@@ -4142,7 +4159,7 @@ ${content}
 
         {/* ZIP CODES TAB */}
         {tab === "zipcodes" && (
-          <div>
+          <div ref={zipcodesRef}>
             <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:10 }}>
               <MapPin size={18} color={C.sky}/>
               <div style={{ fontFamily:"Georgia, serif", fontSize:18, fontWeight:700, color:C.forestDeep }}>Zip Code Data</div>
@@ -4264,7 +4281,7 @@ ${content}
 
         {/* INSIGHTS TAB */}
         {tab === "insights" && (
-          <div>
+          <div ref={insightsRef}>
             <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:16 }}>
               <Sparkles size={18} color={C.dusk}/>
               <div style={{ fontFamily:"Georgia, serif", fontSize:18, fontWeight:700, color:C.forestDeep }}>Data-driven observations</div>
@@ -4301,7 +4318,7 @@ ${content}
 
         {/* COMPARISON TAB (live dashboard data vs imported historic archive) */}
         {tab === "comparison" && (
-          <div>
+          <div ref={comparisonRef}>
             <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:10 }}>
               <TrendingUp size={18} color={C.dusk}/>
               <div style={{ fontFamily:"Georgia, serif", fontSize:18, fontWeight:700, color:C.forestDeep }}>Current Data vs. Historic Archive</div>
@@ -4481,7 +4498,7 @@ ${content}
 
         {/* STRIPE VS CASH TAB */}
         {tab === "paymentmix" && (
-          <div>
+          <div ref={paymentmixRef}>
             <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:10 }}>
               <FileSpreadsheet size={18} color={C.dusk}/>
               <div style={{ fontFamily:"Georgia, serif", fontSize:18, fontWeight:700, color:C.forestDeep }}>Stripe (Card) vs. Cash</div>
@@ -4629,17 +4646,7 @@ ${content}
                 <Upload size={15} style={{transform:"rotate(180deg)"}}/> Export data (for slideshow)
               </button>
               )}
-              {!VIEW_ONLY && (
-              <button onClick={()=>openReportInNewTab(reportRef, "Chimney Rock Ticket Plaza Report")} style={{ display:"flex", alignItems:"center", gap:6, background:C.forest, color:"white", border:"none", borderRadius:6, padding:"9px 16px", fontSize:13, fontWeight:600 }}>
-                <Printer size={15}/> Open in New Tab (for printing)
-              </button>
-              )}
             </div>
-            {!VIEW_ONLY && (
-            <p className="no-print" style={{ fontSize:11.5, color:C.inkSoft, textAlign:"right", marginTop:-8, marginBottom:12 }}>
-              This opens a real browser tab, separate from this chat — click into <b>that new tab</b> first, then press Ctrl+P (⌘+P on Mac) from there.
-            </p>
-            )}
             {reportDownloadError && (
               <div className="no-print" style={{ marginBottom:12, fontSize:12.5, color:C.danger, background:"#FBEFE9", border:`1px solid ${C.danger}44`, borderRadius:8, padding:"8px 14px" }}>
                 ⚠️ {reportDownloadError}
