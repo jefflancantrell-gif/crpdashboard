@@ -3831,6 +3831,7 @@ ${content}
         {tab === "seasonreport" && (
           <div>
             <div className="no-print" style={{ marginBottom:12 }}>
+              {!VIEW_ONLY && (<>
               <div style={{ display:"flex", justifyContent:"flex-end" }}>
                 <button onClick={()=>openReportInNewTab(seasonReportRef, "Chimney Rock Season Report")} style={{ display:"flex", alignItems:"center", gap:6, background:C.forest, color:"white", border:"none", borderRadius:6, padding:"9px 16px", fontSize:13, fontWeight:600 }}>
                   <Printer size={15}/> Open in New Tab (for printing)
@@ -3839,6 +3840,7 @@ ${content}
               <p style={{ fontSize:11.5, color:C.inkSoft, textAlign:"right", marginTop:6, marginBottom:0 }}>
                 This opens a real browser tab, separate from this chat — click into <b>that new tab</b> first, then press Ctrl+P (⌘+P on Mac) from there.
               </p>
+              </>)}
               {reportDownloadError && (
                 <div style={{ marginTop:10, fontSize:12.5, color:C.danger, background:"#FBEFE9", border:`1px solid ${C.danger}44`, borderRadius:8, padding:"8px 14px" }}>
                   ⚠️ {reportDownloadError}
@@ -4627,13 +4629,17 @@ ${content}
                 <Upload size={15} style={{transform:"rotate(180deg)"}}/> Export data (for slideshow)
               </button>
               )}
+              {!VIEW_ONLY && (
               <button onClick={()=>openReportInNewTab(reportRef, "Chimney Rock Ticket Plaza Report")} style={{ display:"flex", alignItems:"center", gap:6, background:C.forest, color:"white", border:"none", borderRadius:6, padding:"9px 16px", fontSize:13, fontWeight:600 }}>
                 <Printer size={15}/> Open in New Tab (for printing)
               </button>
+              )}
             </div>
+            {!VIEW_ONLY && (
             <p className="no-print" style={{ fontSize:11.5, color:C.inkSoft, textAlign:"right", marginTop:-8, marginBottom:12 }}>
               This opens a real browser tab, separate from this chat — click into <b>that new tab</b> first, then press Ctrl+P (⌘+P on Mac) from there.
             </p>
+            )}
             {reportDownloadError && (
               <div className="no-print" style={{ marginBottom:12, fontSize:12.5, color:C.danger, background:"#FBEFE9", border:`1px solid ${C.danger}44`, borderRadius:8, padding:"8px 14px" }}>
                 ⚠️ {reportDownloadError}
