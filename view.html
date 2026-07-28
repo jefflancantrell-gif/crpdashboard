@@ -3016,7 +3016,7 @@ ${content}
               <Sparkles size={15}/> Good News / Bad News
             </button>
           )}
-          {hasAnyData && (
+          {hasAnyData && !VIEW_ONLY && (
             <button onClick={generateMasterWorkbook} title="Downloads a multi-tab Excel workbook: executive summary, daily detail, rankings, revenue, visitor origin, and long-term history"
               style={{ display:"flex", alignItems:"center", gap:6, background:C.dusk2, color:C.forestDeep, border:"none", borderRadius:6, padding:"7px 12px", fontSize:12.5, fontWeight:700 }}>
               <FileSpreadsheet size={15}/> Master Spreadsheet
@@ -4608,6 +4608,7 @@ ${content}
         {tab === "report" && (
           <div>
             <div className="no-print" style={{ display:"flex", justifyContent:"flex-end", gap:10, marginBottom:12 }}>
+              {!VIEW_ONLY && (
               <button onClick={()=>{
                 setReportDownloadError(null);
                 try {
@@ -4625,6 +4626,7 @@ ${content}
               }} style={{ display:"flex", alignItems:"center", gap:6, background:"white", color:C.forest, border:`1px solid ${C.forest}`, borderRadius:6, padding:"9px 16px", fontSize:13, fontWeight:600 }}>
                 <Upload size={15} style={{transform:"rotate(180deg)"}}/> Export data (for slideshow)
               </button>
+              )}
               <button onClick={()=>openReportInNewTab(reportRef, "Chimney Rock Ticket Plaza Report")} style={{ display:"flex", alignItems:"center", gap:6, background:C.forest, color:"white", border:"none", borderRadius:6, padding:"9px 16px", fontSize:13, fontWeight:600 }}>
                 <Printer size={15}/> Open in New Tab (for printing)
               </button>
