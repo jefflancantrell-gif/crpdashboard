@@ -118,6 +118,29 @@
   // Builds a shareable read-only link from the REAL underlying localStorage data.
   // Only meaningful when not already viewing a shared link -- exposed for the
   // "Share Read-Only Link" button in index.html.
+  // Downloads the current local data as a plain snapshot.json file. Drag that file
+  // into the crpdashboard GitHub repo (replacing the old one) to "publish" -- anyone
+  // who visits view.html (a permanently read-only page, unlike this editable one) will
+  // then see this exact snapshot, and it won't change again until you publish a new one.
+  window.__crdashDownloadSnapshotFile__ = function () {
+    const data = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith(NS)) data[k.slice(NS.length)] = localStorage.getItem(k);
+    }
+    const payload = JSON.stringify({ data, meta: { createdAt: new Date().toISOString() } });
+    const blob = new Blob([payload], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "snapshot.json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    return { byteLength: blob.size };
+  };
+
   window.__crdashBuildShareLink__ = async function () {
     const data = {};
     for (let i = 0; i < localStorage.length; i++) {
