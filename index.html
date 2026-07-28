@@ -266,12 +266,12 @@ const CloudSun = (p) => React.createElement(IconBase, p, React.createElement("pa
 const MapPin = (p) => React.createElement(IconBase, p, React.createElement("path",{d:"M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 1 1 16 0zM12 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"}));
 
 // ---------- palette (granite / forest / dusk-over-the-gorge) ----------
-// Flip this to true to produce a share-safe, view-only copy of this dashboard: hides the
-// Upload tab, the "Clear Data" card, and the historic-archive upload box, while leaving every
-// tab, chart, and comparison fully browsable. Meant for handing a working copy to someone who
-// should be able to look around but not add, remove, or wipe data. Leave false for your own
-// day-to-day working copy.
-const VIEW_ONLY = false;
+// True whenever this page is running in read-only mode (a #share=... link, or -- on
+// view.html specifically -- always, via view_polyfill.js). Hides the Upload tab, the
+// "How This Works" tab, the "Clear Data" card, and the historic-archive upload box, while
+// leaving every other tab, chart, and comparison fully browsable. Nothing to toggle by hand:
+// this follows window.__CRDASH_READONLY__, which the polyfill sets before this script runs.
+const VIEW_ONLY = !!window.__CRDASH_READONLY__;
 
 const C = {
   bg: "#F6F4EE",
@@ -3022,7 +3022,7 @@ ${content}
               <FileSpreadsheet size={15}/> Master Spreadsheet
             </button>
           )}
-          {["upload","overview","trends","weather","zipcodes","insights","comparison","paymentmix","report","seasonreport","howthis"].filter(t => !VIEW_ONLY || t !== "upload").map(t => (
+          {["upload","overview","trends","weather","zipcodes","insights","comparison","paymentmix","report","seasonreport","howthis"].filter(t => !VIEW_ONLY || (t !== "upload" && t !== "howthis")).map(t => (
             <button key={t} onClick={()=>setTab(t)} style={{
               background: tab===t ? C.dusk : "transparent", color: tab===t ? "white" : "#D7E0D9",
               border: `1px solid ${tab===t ? C.dusk : "#3d5443"}`, borderRadius:6, padding:"7px 12px",
